@@ -43,42 +43,42 @@ function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
 
     if ($stmt) {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $html .= '<tr>';
-            $html .= '<td>' . $row['id'] . '</td>';
-            $html .= '<td>' . $row['username'] . '</td>';
+            $html .= '<tr>
+            <td>' . $row['id'] . '</td>
+            <td>' . $row['username'] . '</td>';
             $admin_status = ($row['admin_status'] == 1) ? 'Yes' : 'No';
             $html .= '<td>' . $admin_status . '</td>';
             $html .= '<td>';
             if ($loggedInUserAdmin || $row['username'] === $_SESSION['userLogin']) {
-                // Pulsanti per CRUD
-                $html .= '<form method="post" action="">';
-                $html .= '<input type="hidden" name="edit_user_id" value="' . $row['id'] . '">';
-                $html .= '<div class="d-flex">';
-                $html .= '<button type="submit" class="btn btn-primary" name="edit_profile">Edit Profile</button>';
-                $html .= '</form>';
-                $html .= '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal' . $row['id'] . '">Delete Profile</button>';
-                $html .= '</div>';
-                // Conferma l'eliminazione del profilo
-                $html .= '<div class="modal fade" id="confirmDeleteModal' . $row['id'] . '" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">';
-                $html .= '<div class="modal-dialog">';
-                $html .= '<div class="modal-content">';
-                $html .= '<div class="modal-header">';
-                $html .= '<h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>';
-                $html .= '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
-                $html .= '</div>';
-                $html .= '<div class="modal-body">';
-                $html .= 'Are you sure you want to delete this profile?';
-                $html .= '</div>';
-                $html .= '<div class="modal-footer">';
-                $html .= '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>';
-                $html .= '<form method="post" action="">';
-                $html .= '<input type="hidden" name="delete_user_id" value="' . $row['id'] . '">';
-                $html .= '<button type="submit" class="btn btn-danger" name="confirm_delete_profile">Delete</button>';
-                $html .= '</form>';
-                $html .= '</div>';
-                $html .= '</div>';
-                $html .= '</div>';
-                $html .= '</div>';
+                // Pulsanti per operazioni CRUD
+                $html .= '<form method="post" action="">
+                <input type="hidden" name="edit_user_id" value="' . $row['id'] . '">
+                <div class="d-flex">
+                <button type="submit" class="btn btn-primary" name="edit_profile">Edit Profile</button>
+                </form>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal' . $row['id'] . '">Delete Profile</button>
+                </div>';
+                // Modale di conferma cancellazione profilo
+                $html .= '<div class="modal fade" id="confirmDeleteModal' . $row['id'] . '" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                Are you sure you want to delete this profile?
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="">
+                <input type="hidden" name="delete_user_id" value="' . $row['id'] . '">
+                <button type="submit" class="btn btn-danger" name="confirm_delete_profile">Delete</button>
+                </form>
+                </div>
+                </div>
+                </div>
+                </div>';
             }
             $html .= '</td></tr>';
         }
@@ -88,29 +88,35 @@ function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
 
     $html .= '</tbody></table></div>';
 
-    echo $html;
-
+    // Form per la modifica del profilo
     if (isset($_POST['edit_profile'])) {
         $userId = $_POST['edit_user_id'];
         $user = $userDTO->getUserByID($userId);
         if ($user) {
-            echo '<div class="mt-3">
+            $html .= '<div class="mt-3">
             <h2>Edit Profile</h2>
             <form method="post" action="">
             <input type="hidden" name="edited_user_id" value="' . $user['id'] . '">
             <label for="edit_username">Username:</label>
             <input type="text" id="edit_username" name="edit_username" value="' . $user['username'] . '">
             <label for="edit_password">Password:</label>
-            <input type="password" id="edit_password" name="edit_password">
-            <button type="submit" class="btn btn-primary" name="save_edit">Save Changes</button>
+            <input type="password" id="edit_password" name="edit_password">';
+
+            $adminChecked = ($user['admin_status'] == 1) ? 'checked' : '';
+            $html .= '<div class="form-check">
+            <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" ' . $adminChecked . '>
+            <label class="form-check-label" for="edit_admin">Admin</label>
+          </div>';
+
+            $html .= '<button type="submit" class="btn btn-primary" name="save_edit" >Save Changes</button>
             </form>
             </div>';
         } else {
-            echo '<div class="alert alert-danger" role="alert">User not found.</div>';
+            $html .= '<div class="alert alert-danger" role="alert">User not found.</div>';
         }
     }
+    echo $html;
 }
-
 
 
 function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
@@ -135,11 +141,11 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
                 $result = $userDTO->updateUser($updatedUserData);
 
                 if ($result) {
-                    // Update per l'admin (Solo se ha cambiato il suo stesso)
+                    // Cambia il valore di sessione dell'admin (Se ha cambiato il suo profilo)
                     if (!$loggedInUserAdmin || $_SESSION['userLogin'] === $editedUsername) {
                         $_SESSION['userLogin'] = $editedUsername;
                     }
-                    header("Refresh:0"); // Refresh
+                    header('Location: http://localhost/index.php'); // Causa errore
                     exit();
                 } else {
                     echo "Failed to update user profile.";
@@ -150,11 +156,10 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
         }
         if (isset($_POST['confirm_delete_profile'])) {
             $userId = $_POST['delete_user_id'];
-
             $result = $userDTO->deleteUser($userId);
 
             if ($result) {
-                header("Refresh:0");
+                exit();
             } else {
                 echo "Failed to delete user profile.";
             }

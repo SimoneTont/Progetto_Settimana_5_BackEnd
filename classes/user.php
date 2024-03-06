@@ -64,4 +64,12 @@ class UserDTO
         $result = $stmt->fetchColumn();
         return $result && $result == 1;
     }
+
+    public function getUserByUsername(string $username)
+{
+    $sql = "SELECT * FROM utenti WHERE username = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute([$username]);
+    return $stmt->fetch(\PDO::FETCH_ASSOC);
+}
 }

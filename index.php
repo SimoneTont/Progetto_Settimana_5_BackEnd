@@ -28,6 +28,14 @@ $userName = $_SESSION['userLogin'];
 // Ottiene lo stato di amministratore dell'utente loggato
 $loggedInUserAdmin = $userDTO->isAdmin($userName);
 
+$loggedInUser = $userDTO->getUserByUsername($_SESSION['userLogin']);
+
+if ($loggedInUser) {
+    // Fa il redirect sia con logout che con cambio username
+} else {
+    header('Location: http://localhost/logout.php');
+}
+
 ?>
 
 <!DOCTYPE html>
