@@ -145,8 +145,10 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
                     if (!$loggedInUserAdmin || $_SESSION['userLogin'] === $editedUsername) {
                         $_SESSION['userLogin'] = $editedUsername;
                     }
-                    header('Location: http://localhost/index.php'); // Causa errore
+                    //header('Location: http://localhost/index.php'); // Causa errore
+                    echo "<meta http-equiv='refresh' content='0'>";
                     exit();
+
                 } else {
                     echo "Failed to update user profile.";
                 }
@@ -159,6 +161,7 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
             $result = $userDTO->deleteUser($userId);
 
             if ($result) {
+                echo "<meta http-equiv='refresh' content='0'>";
                 exit();
             } else {
                 echo "Failed to delete user profile.";

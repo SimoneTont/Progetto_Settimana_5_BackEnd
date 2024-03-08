@@ -31,7 +31,7 @@ $loggedInUserAdmin = $userDTO->isAdmin($userName);
 $loggedInUser = $userDTO->getUserByUsername($_SESSION['userLogin']);
 
 if ($loggedInUser) {
-    // Fa il redirect sia con logout che con cambio username
+    // Fa il redirect quando l'utente cancella il suo profilo
 } else {
     header('Location: http://localhost/logout.php');
 }
