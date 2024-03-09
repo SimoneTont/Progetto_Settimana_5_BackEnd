@@ -26,7 +26,8 @@ class UserDTO
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function saveUser(array $user) {
+    public function saveUser(array $user)
+    {
         //Controlla che non ci sia uno username già esistente, nel caso blocca la funzione
         $checkSql = "SELECT COUNT(*) AS count FROM utenti WHERE username = :username";
         $checkStmt = $this->conn->prepare($checkSql);
@@ -39,7 +40,7 @@ class UserDTO
         $insertStmt = $this->conn->prepare($insertSql);
         return $insertStmt->execute(['username' => $user['username'], 'password' => $user['password'], 'admin_status' => $user['admin_status']]);
     }
-    
+
 
     public function updateUser(array $user)
     {
@@ -66,10 +67,10 @@ class UserDTO
     }
 
     public function getUserByUsername(string $username)
-{
-    $sql = "SELECT * FROM utenti WHERE username = ?";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->execute([$username]);
-    return $stmt->fetch(\PDO::FETCH_ASSOC);
-}
+    {
+        $sql = "SELECT * FROM utenti WHERE username = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$username]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
 }

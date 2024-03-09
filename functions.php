@@ -28,6 +28,7 @@ function handleLoginFormSubmission($pdo)
 
 function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
 {
+    // Crea la tabella
     $html = '<div class="table-responsive">
     <table class="table table-striped table-hover">
     <thead>
@@ -103,21 +104,19 @@ function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
             <label for="edit_username">Username:</label>
             <input type="text" id="edit_username" name="edit_username" value="' . $user['username'] . '">';
             if ($user['username'] === $_SESSION['userLogin']) {
-                $Editform .='<label for="edit_password">Password:</label>
+                $Editform .= '<label for="edit_password">Password:</label>
                 <input type="password" id="edit_password" name="edit_password">';
             }
             $adminChecked = ($user['admin_status'] == 1) ? 'checked' : ''; // Se admin_status == 1, abilita il checkbox
 
             if ($loggedInUserAdmin) {
-                $Editform .='<div class="form-check">
+                $Editform .= '<div class="form-check">
                 <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" ' . $adminChecked . '>';
-            }
-            else {
-                $Editform .='<div class="form-check">
+            } else {
+                $Editform .= '<div class="form-check">
                 <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" disabled>';
             }
-
-            $Editform .='<label class="form-check-label" for="edit_admin">Admin</label>
+            $Editform .= '<label class="form-check-label" for="edit_admin">Admin</label>
             </div>
             <button type="submit" class="btn btn-primary" name="save_edit" >Save Changes</button>
               </form>
@@ -161,7 +160,6 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
                     }
                     echo "<meta http-equiv='refresh' content='0'>";
                     exit();
-
                 } else {
                     echo "Failed to update user profile.";
                 }

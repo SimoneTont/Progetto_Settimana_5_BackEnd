@@ -31,8 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     exit();
   } else if ($result === false) {
     echo "Username already exists. Please choose a different one.";
-  } 
-  else {
+  } else {
     echo "Error: Registration failed.";
   }
 }
