@@ -51,13 +51,14 @@ function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
             $html .= '<td>';
             if ($loggedInUserAdmin || $row['username'] === $_SESSION['userLogin']) {
                 // Pulsanti per operazioni CRUD
-                $html .= '<form method="post" action="">
+                $buttons = '<form method="post" action="">
                 <input type="hidden" name="edit_user_id" value="' . $row['id'] . '">
                 <div class="d-flex">
                 <button type="submit" class="btn btn-primary" name="edit_profile">Edit Profile</button>
                 </form>
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal' . $row['id'] . '">Delete Profile</button>
                 </div>';
+                $html .= $buttons;
                 // Modale di conferma cancellazione profilo
                 $html .= '<div class="modal fade" id="confirmDeleteModal' . $row['id'] . '" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -90,28 +91,41 @@ function generateUserTable($pdo, $loggedInUserAdmin, $userDTO)
 
     // Form per la modifica del profilo
     if (isset($_POST['edit_profile'])) {
+        $loggedInUser = $userDTO->getUserByUsername($_SESSION['userLogin']);
         $userId = $_POST['edit_user_id'];
         $user = $userDTO->getUserByID($userId);
         if ($user) {
-            $html .= '<div class="mt-3">
+            // Struttura base form modifica profilo
+            $Editform = '<div class="mt-3">
             <h2>Edit Profile</h2>
             <form method="post" action="">
             <input type="hidden" name="edited_user_id" value="' . $user['id'] . '">
             <label for="edit_username">Username:</label>
-            <input type="text" id="edit_username" name="edit_username" value="' . $user['username'] . '">
-            <label for="edit_password">Password:</label>
-            <input type="password" id="edit_password" name="edit_password">';
+            <input type="text" id="edit_username" name="edit_username" value="' . $user['username'] . '">';
+            if ($user['username'] === $_SESSION['userLogin']) {
+                $Editform .='<label for="edit_password">Password:</label>
+                <input type="password" id="edit_password" name="edit_password">';
+            }
+            $adminChecked = ($user['admin_status'] == 1) ? 'checked' : ''; // Se admin_status == 1, abilita il checkbox
 
-            $adminChecked = ($user['admin_status'] == 1) ? 'checked' : '';
-            $html .= '<div class="form-check">
-            <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" ' . $adminChecked . '>
-            <label class="form-check-label" for="edit_admin">Admin</label>
-          </div>';
+            if ($loggedInUserAdmin) {
+                $Editform .='<div class="form-check">
+                <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" ' . $adminChecked . '>';
+            }
+            else {
+                $Editform .='<div class="form-check">
+                <input class="form-check-input" type="checkbox" id="edit_admin" name="edit_admin" value="1" disabled>';
+            }
 
-            $html .= '<button type="submit" class="btn btn-primary" name="save_edit" >Save Changes</button>
-            </form>
-            </div>';
-        } else {
+            $Editform .='<label class="form-check-label" for="edit_admin">Admin</label>
+            </div>
+            <button type="submit" class="btn btn-primary" name="save_edit" >Save Changes</button>
+              </form>
+              </div>';
+
+            $html .= $Editform; // Aggiunge il form alla pagina
+        } else // Gestione errori
+        {
             $html .= '<div class="alert alert-danger" role="alert">User not found.</div>';
         }
     }
@@ -124,10 +138,10 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (isset($_POST['save_edit'])) {
             $userId = $_POST['edited_user_id'];
+            $user = $userDTO->getUserByID($userId);
             $editedUsername = $_POST['edit_username'];
             $editedPassword = $_POST['edit_password'];
             $editedAdminStatus = isset($_POST['edit_admin']) ? 1 : 0;
-
             $hashedPassword = password_hash($editedPassword, PASSWORD_DEFAULT);
 
             $updatedUserData = [
@@ -141,11 +155,10 @@ function handleUpdateProfile($pdo, $userDTO, $loggedInUserAdmin)
                 $result = $userDTO->updateUser($updatedUserData);
 
                 if ($result) {
-                    // Cambia il valore di sessione dell'admin (Se ha cambiato il suo profilo)
-                    if (!$loggedInUserAdmin || $_SESSION['userLogin'] === $editedUsername) {
+                    // Cambia il valore di sessione se l'utente ha cambiato il proprio username
+                    if ($_SESSION['userLogin'] === $user['username']) {
                         $_SESSION['userLogin'] = $editedUsername;
                     }
-                    //header('Location: http://localhost/index.php'); // Causa errore
                     echo "<meta http-equiv='refresh' content='0'>";
                     exit();
 
